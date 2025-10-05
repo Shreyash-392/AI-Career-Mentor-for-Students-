@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Mentor - Your Personal Career Guide</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/phosphor-icons/1.4.2/css/phosphor.min.css" rel="stylesheet">
     <style>
         :root {
@@ -48,12 +48,12 @@
         body.dynamic-bg {
             background: linear-gradient(-45deg, #e0e7ff, #c7d2fe, #a5b4fc, #818cf8);
             background-size: 400% 400%;
-            animation: gradient-animation 15s ease infinite;
+            animation: gradient-animation 10s ease infinite;
         }
         html.dark body.dynamic-bg {
             background: linear-gradient(-45deg, #1e293b, #334155, #475569, #0f172a);
             background-size: 400% 400%;
-            animation: gradient-animation 15s ease infinite;
+            animation: gradient-animation 10s ease infinite;
         }
         .step-container {
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
@@ -66,7 +66,7 @@
             border-radius: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
         }
-        .card:hover {
+        .card:hover:not(#welcome-step) { /* Prevent welcome card from lifting */
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
             transform: translateY(-2px);
         }
@@ -117,10 +117,34 @@
         .slide-out { animation: slideOutToLeft 0.5s forwards; }
         .fade-in { animation: fadeIn 0.5s ease-out forwards; animation-delay: var(--delay, 0s); opacity: 0; }
         
-        /* New Robot Animations */
-        @keyframes float {
+        /* Floating Shapes Animation */
+        .floating-shapes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; }
+        .shape { position: absolute; display: block; list-style: none; background: rgba(255, 255, 255, 0.2); animation: float-shapes 25s linear infinite; }
+        .shape:nth-child(1) { left: 25%; width: 80px; height: 80px; bottom: -150px; animation-delay: 2s; }
+        .shape:nth-child(2) { left: 10%; width: 20px; height: 20px; bottom: -150px; animation-delay: 4s; animation-duration: 12s; }
+        .shape:nth-child(3) { left: 70%; width: 20px; height: 20px; bottom: -150px; animation-delay: 6s; }
+        .shape:nth-child(4) { left: 40%; width: 60px; height: 60px; bottom: -150px; animation-delay: 0s; animation-duration: 18s; }
+        .shape:nth-child(5) { left: 65%; width: 20px; height: 20px; bottom: -150px; animation-delay: 0s; }
+        .shape:nth-child(6) { left: 75%; width: 110px; height: 110px; bottom: -150px; animation-delay: 3s; }
+        html.dark .shape { background: rgba(255, 255, 255, 0.05); }
+
+        @keyframes float-shapes {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0%; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+        }
+
+        /* Robot Animations */
+         #waving-robot-group {
+            animation: float-robot 4s ease-in-out infinite;
+        }
+        @keyframes float-robot {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
+        }
+        #robot-arm {
+            transform-origin: 50px 90px; /* Joint of the arm */
+            animation: wave 2.5s ease-in-out infinite;
+            animation-delay: 0.5s;
         }
         @keyframes wave {
             0%, 100% { transform: rotate(0deg); }
@@ -128,97 +152,48 @@
             50% { transform: rotate(10deg); }
             75% { transform: rotate(-25deg); }
         }
-        #waving-robot {
-            animation: float 4s ease-in-out infinite;
-        }
-        #robot-arm {
-            transform-origin: 50px 90px; /* Joint of the arm */
-            animation: wave 2.5s ease-in-out infinite;
-            animation-delay: 0.5s;
-        }
 
         /* Ripple effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 600ms linear;
-            background-color: rgba(255, 255, 255, 0.7);
-        }
+        .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple 600ms linear; background-color: rgba(255, 255, 255, 0.7); }
         @keyframes ripple { to { transform: scale(4); opacity: 0; } }
 
         /* Toast Notification */
-        #toast {
-            position: fixed; bottom: -100px; left: 50%;
-            transform: translateX(-50%); background-color: #22c55e; color: white;
-            padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: bottom 0.5s; z-index: 100;
-        }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #22c55e; color: white; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: bottom 0.5s; z-index: 100; }
         #toast.show { bottom: 20px; }
 
         /* Progress Bar */
-        #progress-bar-container {
-            width: 100%;
-            background-color: var(--progress-bar-bg);
-            border-radius: 9999px;
-            height: 8px;
-            transition: background-color 0.3s;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: var(--progress-bar-fill);
-            border-radius: 9999px;
-            transition: width 0.5s ease-out, background-color 0.3s;
-        }
+        #progress-bar-container { width: 100%; background-color: var(--progress-bar-bg); border-radius: 9999px; height: 8px; transition: background-color 0.3s; }
+        #progress-bar { width: 0%; height: 100%; background-color: var(--progress-bar-fill); border-radius: 9999px; transition: width 0.5s ease-out, background-color 0.3s; }
         
-        .quiz-option {
-            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
-        }
-        .quiz-option.selected {
-            background-color: #e0e7ff;
-            border-color: #4f46e5;
-            transform: scale(1.03);
-        }
-        html.dark .quiz-option.selected {
-            background-color: #3730a3;
-            border-color: #6366f1;
-        }
+        .quiz-option { transition: background-color 0.2s, border-color 0.2s, transform 0.2s; }
+        .quiz-option.selected { background-color: #e0e7ff; border-color: #4f46e5; transform: scale(1.03); }
+        html.dark .quiz-option.selected { background-color: #3730a3; border-color: #6366f1; }
         
         /* AI "Thinking" Animation */
-        .thinking-dots span {
-            animation: blink 1.4s infinite both;
-            display: inline-block;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        .thinking-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .thinking-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        @keyframes blink {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
+        .thinking-dots span { animation: blink 1.4s infinite both; display: inline-block; font-weight: bold; font-size: 1.2em; }
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
         /* Form Input Animations */
-        input, textarea, select {
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--focus-border-color) !important;
-            box-shadow: 0 0 0 3px var(--glow-color) !important;
-        }
-        .bg-card-bg-color {
-            background-color: var(--card-bg-color);
-        }
+        input, textarea, select { transition: border-color 0.3s, box-shadow 0.3s; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--focus-border-color) !important; box-shadow: 0 0 0 3px var(--glow-color) !important; }
+        .bg-card-bg-color { background-color: var(--card-bg-color); }
+
+        /* Scroll Animation */
+        .scroll-fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .scroll-fade-in.is-visible { opacity: 1; transform: translateY(0); }
+        
+        /* Login Modal */
+        #login-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(5px); }
+        #login-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 dynamic-bg">
+<body class="dynamic-bg">
+    <div class="floating-shapes">
+        <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+        <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+    </div>
 
     <!-- API Error Banner -->
     <div id="api-error-banner" class="hidden fixed top-0 left-0 right-0 bg-red-500 text-white p-3 text-center text-sm z-50">
@@ -236,41 +211,78 @@
         </label>
     </div>
     
-    <!-- Persistent Animated Robot -->
-    <div id="waving-robot" class="fixed bottom-4 left-4 w-48 h-48 pointer-events-none z-20 hidden md:block">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <rect x="50" y="70" width="100" height="100" rx="15" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
-            <rect x="70" y="30" width="60" height="40" rx="10" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
-            <circle cx="100" cy="20" r="5" fill="#4f46e5"/>
-            <circle cx="85" cy="50" r="5" fill="#1e293b" class="dark:fill-white"/>
-            <circle cx="115" cy="50" r="5" fill="#1e293b" class="dark:fill-white"/>
-            <rect x="65" y="90" width="70" height="50" rx="5" fill="#e0e7ff" class="dark:fill-slate-700"/>
-            <text x="100" y="110" font-family="Inter, sans-serif" font-size="9" fill="#1e293b" class="dark:fill-slate-200" text-anchor="middle" font-weight="600">
-                <tspan x="100" dy="-9">BY CODING</tspan>
-                <tspan x="100" dy="12">AND</tspan>
-                <tspan x="100" dy="12">HARMONY</tspan>
-            </text>
-            <line x1="150" y1="90" x2="180" y2="120" stroke="var(--border-color)" stroke-width="12" stroke-linecap="round"/>
-            <circle cx="180" cy="120" r="8" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
-            <g id="robot-arm">
-                <line x1="50" y1="90" x2="20" y2="60" stroke="var(--border-color)" stroke-width="12" stroke-linecap="round"/>
-                <circle cx="20" cy="60" r="8" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
-            </g>
-        </svg>
-    </div>
+    <div class="w-full max-w-4xl mx-auto">
+        <!-- Header for Welcome Page -->
+        <header id="welcome-header" class="flex justify-between items-center p-4 text-color mb-4">
+            <h1 class="text-xl font-bold">AI Mentor</h1>
+            <nav class="flex space-x-6 items-center">
+                <a href="#" onclick="location.reload()" class="hover:text-indigo-500 transition-colors">Home</a>
+                <a href="#" onclick="toggleLoginModal(true)" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login</a>
+            </nav>
+        </header>
 
-    <div class="w-full max-w-2xl mx-auto">
-        <!-- Progress Bar -->
-        <div id="progress-bar-container" class="mb-4">
+        <!-- Progress Bar (Initially Hidden) -->
+        <div id="progress-bar-container" class="mb-4 hidden">
             <div id="progress-bar"></div>
         </div>
 
         <!-- Welcome Step -->
-        <div id="welcome-step" class="step-container text-center card p-8">
-            <img src="https://placehold.co/600x400/1e293b/e2e8f0?text=AI+Mentor" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0f172a/e2e8f0?text=AI+Mentor';" alt="AI Career Mentorship" class="rounded-xl mb-6 w-full h-auto max-w-md mx-auto fade-in">
-            <h1 class="text-3xl font-bold mt-4 fade-in" style="--delay: 0.1s;">Welcome to Your AI Mentor</h1>
-            <p class="mt-4 text-muted-color fade-in" style="--delay: 0.2s;">I use AI to help you navigate your career path. Let's build a tailored roadmap just for you.</p>
-            <button onclick="showStep('profile-step')" class="btn-primary mt-8 px-8 py-3 rounded-lg font-semibold fade-in" style="--delay: 0.4s;">Let's Get Started</button>
+        <div id="welcome-step" class="step-container">
+             <div class="min-h-[80vh] flex flex-col md:flex-row justify-center items-center gap-8 px-4">
+                <!-- Text Content -->
+                <div class="text-center md:text-left md:w-1/2">
+                    <h1 class="text-5xl md:text-7xl font-extrabold mt-4 fade-in" style="--delay: 0.1s;">Unlock Your Career Potential</h1>
+                    <p class="mt-6 text-muted-color text-lg max-w-2xl fade-in" style="--delay: 0.2s;">Get a personalized, AI-driven roadmap to guide you towards your professional goals. Stop guessing, start achieving.</p>
+                    <button onclick="startInteraction()" class="btn-primary mt-8 px-10 py-4 rounded-lg font-semibold text-lg fade-in" style="--delay: 0.4s;">
+                        <i class="ph ph-sparkle mr-2"></i>
+                        Interact with AI Mentor
+                    </button>
+                </div>
+                <!-- Robot Image -->
+                <div class="w-64 h-64 fade-in hidden md:block" style="--delay: 0.3s;">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <g id="waving-robot-group">
+                            <rect x="50" y="70" width="100" height="100" rx="15" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
+                            <rect x="70" y="30" width="60" height="40" rx="10" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
+                            <circle cx="100" cy="20" r="5" fill="var(--focus-border-color)"/>
+                            <circle cx="85" cy="50" r="5" fill="var(--text-color)"/>
+                            <circle cx="115" cy="50" r="5" fill="var(--text-color)"/>
+                            <path d="M 90 60 Q 100 68 110 60" stroke="var(--text-color)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <rect x="65" y="90" width="70" height="50" rx="5" fill="var(--progress-bar-bg)"/>
+                            <line x1="150" y1="90" x2="180" y2="120" stroke="var(--border-color)" stroke-width="12" stroke-linecap="round"/>
+                            <circle cx="180" cy="120" r="8" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
+                            <g id="robot-arm">
+                                <line x1="50" y1="90" x2="20" y2="60" stroke="var(--border-color)" stroke-width="12" stroke-linecap="round"/>
+                                <circle cx="20" cy="60" r="8" fill="var(--card-bg-color)" stroke="var(--border-color)" stroke-width="4"/>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div id="about-section" class="scroll-fade-in card p-8 md:p-12 my-16">
+                 <h2 class="text-3xl font-bold text-center mb-8">What is AI Mentor?</h2>
+                 <div class="grid md:grid-cols-3 gap-8 text-center">
+                     <div>
+                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-user-focus"></i></div>
+                         <h3 class="text-xl font-semibold mt-4">Build Your Profile</h3>
+                         <p class="text-muted-color mt-2">Quickly build your career profile by answering a few questions, or simply upload your resume and let our AI do the work.</p>
+                     </div>
+                     <div>
+                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-path"></i></div>
+                         <h3 class="text-xl font-semibold mt-4">Get a Custom Roadmap</h3>
+                         <p class="text-muted-color mt-2">Our AI analyzes your skills and goals to generate a personalized step-by-step roadmap for jobs, higher studies, or competitive exams.</p>
+                     </div>
+                     <div>
+                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-rocket-launch"></i></div>
+                         <h3 class="text-xl font-semibold mt-4">Achieve Your Goals</h3>
+                         <p class="text-muted-color mt-2">Receive actionable insights, project ideas, interview prep, and a downloadable report to guide you on your journey.</p>
+                     </div>
+                 </div>
+            </div>
+             <footer id="footer-section" class="scroll-fade-in text-center text-muted-color text-sm py-8">
+                <p>Developed by Team CODING & HARMONY — Shreyash R Nayak (<a href="mailto:shreyashn392@gmail.com" class="hover:text-indigo-400">shreyashn392@gmail.com</a>) and Aasna Rani (<a href="mailto:aasnarani2007@gmail.com" class="hover:text-indigo-400">aasnarani2007@gmail.com</a>).</p>
+            </footer>
         </div>
 
         <!-- Profile Info Step -->
@@ -332,7 +344,7 @@
                  </div>
              </div>
             <div class="mt-8 flex justify-between items-center">
-                <button onclick="showStep('welcome-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back</button>
+                <button onclick="goBackToHome()" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Home</button>
                 <button id="profile-next-btn" onclick="saveProfileAndProceed()" class="btn-primary px-6 py-2 rounded-lg font-semibold">Next: Define Your Goal →</button>
             </div>
         </div>
@@ -443,6 +455,26 @@
         </div>
     </div>
     
+    <!-- Login Modal -->
+    <div id="login-modal-overlay" class="hidden fade-in" onclick="toggleLoginModal(false)"></div>
+    <div id="login-modal" class="hidden w-full max-w-sm">
+        <div class="card p-8">
+            <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+            <div class="space-y-6">
+                <div class="relative">
+                    <input type="email" id="email" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
+                    <label for="email" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Email Address</label>
+                </div>
+                <div class="relative">
+                    <input type="password" id="password" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
+                    <label for="password" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Password</label>
+                </div>
+                <button onclick="handleLogin()" class="w-full btn-primary px-6 py-3 rounded-lg font-semibold">Login</button>
+            </div>
+            <button onclick="toggleLoginModal(false)" class="absolute top-4 right-4 text-muted-color hover:text-color">&times;</button>
+        </div>
+    </div>
+    
     <div id="toast"></div>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -475,12 +507,29 @@
             }
             document.getElementById('resume').addEventListener('change', handleResumeUpload);
             checkDarkModePreference();
+            setupScrollAnimations();
             showStep(currentStepId, true); // Initial load
 
             document.querySelectorAll('.btn-primary').forEach(button => {
                 button.addEventListener('click', createRipple);
             });
         };
+
+        function startInteraction() {
+            document.getElementById('welcome-header').classList.add('hidden');
+            document.getElementById('about-section').classList.add('hidden');
+            document.getElementById('footer-section').classList.add('hidden');
+            document.getElementById('progress-bar-container').classList.remove('hidden');
+            showStep('profile-step');
+        }
+        
+        function goBackToHome() {
+            document.getElementById('welcome-header').classList.remove('hidden');
+            document.getElementById('about-section').classList.remove('hidden');
+            document.getElementById('footer-section').classList.remove('hidden');
+            document.getElementById('progress-bar-container').classList.add('hidden');
+            showStep('welcome-step');
+        }
 
         function showStep(stepId, isInitial = false) {
             const currentStep = document.getElementById(currentStepId);
@@ -1133,9 +1182,11 @@
             pdfBtn.innerHTML = 'Generating PDF... <span class="loader loader-light"></span>';
             
             const aiFeaturesDiv = document.getElementById('ai-features');
+            const resourceHubDiv = document.getElementById('resource-hub');
 
             try {
                 if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'none';
+                if (resourceHubDiv) resourceHubDiv.style.display = 'none';
 
                 const canvas = await html2canvas(content, {
                     scale: 2,
@@ -1183,6 +1234,7 @@
                 pdfBtn.disabled = false;
                 pdfBtn.innerHTML = originalBtnText;
                 if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'block';
+                if (resourceHubDiv) resourceHubDiv.style.display = 'block';
             }
         }
 
@@ -1196,7 +1248,9 @@
             setTimeout(() => showStep('goodbye-step'), 1500);
         }
 
-        function restart() { location.reload(); }
+        function restart() {
+            location.reload(); 
+        }
         
         function triggerConfetti() {
             const canvas = document.getElementById('confetti-canvas');
@@ -1208,7 +1262,45 @@
             myConfetti({ particleCount: 150, spread: 160 });
         }
 
-        // --- Helpers: Dark Mode, Clipboard ---
+        // --- Helpers & UI Functions ---
+        function toggleLoginModal(show) {
+            const overlay = document.getElementById('login-modal-overlay');
+            const modal = document.getElementById('login-modal');
+            if (show) {
+                overlay.classList.remove('hidden');
+                modal.classList.remove('hidden');
+                modal.classList.add('slide-in');
+            } else {
+                modal.classList.remove('slide-in');
+                modal.classList.add('slide-out');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.add('hidden');
+                    modal.classList.remove('slide-out');
+                }, 500);
+            }
+        }
+        
+        function handleLogin() {
+            // This is a demo login. In a real app, you'd have authentication logic.
+            toggleLoginModal(false);
+            showToast('Login successful! (Demo)');
+        }
+        
+        function setupScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.scroll-fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
