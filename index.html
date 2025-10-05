@@ -39,6 +39,22 @@
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
         }
+        /* Dynamic Background */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body.dynamic-bg {
+            background: linear-gradient(-45deg, #e0e7ff, #c7d2fe, #a5b4fc, #818cf8);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
+        html.dark body.dynamic-bg {
+            background: linear-gradient(-45deg, #1e293b, #334155, #475569, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
         .step-container {
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
@@ -46,20 +62,25 @@
         .card {
             background-color: var(--card-bg-color);
             border: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s;
             border-radius: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            transform: translateY(-2px);
         }
         .btn-primary { 
             background: var(--primary-btn-bg);
             background-size: 200% 200%;
-            transition: background-position 0.5s, transform 0.2s, opacity 0.3s;
+            transition: background-position 0.5s, transform 0.2s, opacity 0.3s, box-shadow 0.3s;
             position: relative;
             overflow: hidden;
         }
         .btn-primary:hover { 
             background-position: right center;
             transform: scale(1.05);
+            box-shadow: 0 10px 20px -5px var(--glow-color);
         }
         .btn-primary:disabled {
             background: var(--text-muted-color);
@@ -163,9 +184,41 @@
             background-color: #3730a3;
             border-color: #6366f1;
         }
+        
+        /* AI "Thinking" Animation */
+        .thinking-dots span {
+            animation: blink 1.4s infinite both;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
+        /* Form Input Animations */
+        input, textarea, select {
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--focus-border-color) !important;
+            box-shadow: 0 0 0 3px var(--glow-color) !important;
+        }
+        .bg-card-bg-color {
+            background-color: var(--card-bg-color);
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4 dynamic-bg">
 
     <!-- API Error Banner -->
     <div id="api-error-banner" class="hidden fixed top-0 left-0 right-0 bg-red-500 text-white p-3 text-center text-sm z-50">
@@ -214,7 +267,7 @@
 
         <!-- Welcome Step -->
         <div id="welcome-step" class="step-container text-center card p-8">
-            <img src="image_dee807.jpg" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0f172a/e2e8f0?text=AI+Mentor';" alt="AI Career Mentorship" class="rounded-xl mb-6 w-full h-auto max-w-md mx-auto fade-in">
+            <img src="https://placehold.co/600x400/1e293b/e2e8f0?text=AI+Mentor" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0f172a/e2e8f0?text=AI+Mentor';" alt="AI Career Mentorship" class="rounded-xl mb-6 w-full h-auto max-w-md mx-auto fade-in">
             <h1 class="text-3xl font-bold mt-4 fade-in" style="--delay: 0.1s;">Welcome to Your AI Mentor</h1>
             <p class="mt-4 text-muted-color fade-in" style="--delay: 0.2s;">I use AI to help you navigate your career path. Let's build a tailored roadmap just for you.</p>
             <button onclick="showStep('profile-step')" class="btn-primary mt-8 px-8 py-3 rounded-lg font-semibold fade-in" style="--delay: 0.4s;">Let's Get Started</button>
@@ -223,57 +276,61 @@
         <!-- Profile Info Step -->
         <div id="profile-step" class="step-container hidden card p-8">
             <h2 class="text-2xl font-bold flex items-center"><i class="ph-user-list mr-3 text-2xl text-indigo-500"></i>Let's Build Your Profile</h2>
-             <div class="mt-6 space-y-6">
-                 <div class="fade-in">
-                    <label for="name" class="block text-sm font-medium">What should I call you?</label>
-                    <input type="text" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-transparent" placeholder="Your Name">
-                </div>
-                <div class="fade-in" style="--delay: 0.1s;">
-                    <label class="block text-sm font-medium">What are your key skills?</label>
-                    <input type="text" id="skills-input" onkeydown="handleTagInput(event, 'skills')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-transparent" placeholder="e.g., Python, C++. Press Enter to add.">
-                    <div id="skills-tags" class="mt-2 flex flex-wrap gap-2"></div>
-                </div>
-                <div class="fade-in" style="--delay: 0.2s;">
-                    <label class="block text-sm font-medium">What are your interests or hobbies?</label>
-                    <input type="text" id="interests-input" onkeydown="handleTagInput(event, 'interests')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-transparent" placeholder="e.g., AI, Writing. Press Enter to add.">
-                    <div id="interests-tags" class="mt-2 flex flex-wrap gap-2"></div>
-                </div>
-                 <div class="fade-in" style="--delay: 0.3s;">
-                    <label for="projects" class="block text-sm font-medium">Tell me about a project you're proud of. (Optional)</label>
-                    <textarea id="projects" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-transparent"></textarea>
-                </div>
-                <div class="fade-in" style="--delay: 0.4s;">
-                     <label for="ug-stream" class="block text-sm font-medium">Undergraduate Background</label>
-                     <div class="flex space-x-2 mt-1">
-                        <select id="ug-stream" class="block w-full rounded-md border-gray-300 shadow-sm bg-card-bg-color">
-                            <option>B.Tech CSE</option>
-                            <option>B.Tech ECE</option>
-                            <option>B.Tech Mechanical</option>
-                            <option>B.Com</option>
-                            <option>BBA</option>
-                            <option>B.A. History</option>
-                            <option>B.A. Political Science</option>
-                            <option>B.Sc. Physics</option>
-                            <option>B.Sc. Chemistry</option>
-                        </select>
-                        <input type="text" id="ug-marks" class="block w-1/3 rounded-md border-gray-300 shadow-sm bg-transparent" placeholder="CGPA/%">
-                     </div>
-                </div>
+             <div class="mt-6 space-y-8">
+                 <div class="relative fade-in">
+                     <input type="text" id="name" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
+                     <label for="name" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">What should I call you?</label>
+                 </div>
+
+                 <div class="relative fade-in" style="--delay: 0.1s;">
+                     <input type="text" id="skills-input" onkeydown="handleTagInput(event, 'skills')" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
+                     <label for="skills-input" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Key skills? (Press Enter to add)</label>
+                     <div id="skills-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                 </div>
+
+                 <div class="relative fade-in" style="--delay: 0.2s;">
+                     <input type="text" id="interests-input" onkeydown="handleTagInput(event, 'interests')" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
+                     <label for="interests-input" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Interests or hobbies? (Press Enter)</label>
+                     <div id="interests-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                 </div>
+
+                 <div class="relative fade-in" style="--delay: 0.3s;">
+                     <textarea id="projects" rows="3" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" "></textarea>
+                     <label for="projects" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">A project you're proud of?</label>
+                 </div>
+
+                 <div class="fade-in" style="--delay: 0.4s;">
+                      <label class="block text-sm font-medium text-muted-color mb-1">Undergraduate Background</label>
+                      <div class="flex space-x-2">
+                          <select id="ug-stream" class="block w-full rounded-md p-3 bg-transparent border-gray-300">
+                              <option>B.Tech CSE</option>
+                              <option>B.Tech ECE</option>
+                              <option>B.Tech Mechanical</option>
+                              <option>B.Com</option>
+                              <option>BBA</option>
+                              <option>B.A. History</option>
+                              <option>B.A. Political Science</option>
+                              <option>B.Sc. Physics</option>
+                              <option>B.Sc. Chemistry</option>
+                          </select>
+                          <input type="text" id="ug-marks" class="block w-1/3 rounded-md p-3 bg-transparent border-gray-300" placeholder="CGPA/%">
+                      </div>
+                 </div>
                  <div class="fade-in" style="--delay: 0.5s;">
-                    <label class="block text-sm font-medium">Do you have a resume?</label>
-                    <div id="resume-feedback" class="text-sm text-green-500 mt-1"></div>
-                    <div class="flex items-center space-x-4 mt-2">
-                        <label for="resume" class="cursor-pointer text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
-                           📤 Upload File
-                           <input type="file" id="resume" class="hidden">
-                        </label>
-                         <span class="text-muted-color">or</span>
-                        <button onclick="startQuiz()" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
-                           🤖 Build with AI Quiz
-                        </button>
-                    </div>
-                </div>
-            </div>
+                     <label class="block text-sm font-medium">Upload your resume to autofill.</label>
+                     <div id="resume-feedback" class="text-sm text-green-500 mt-1"></div>
+                     <div class="flex items-center space-x-4 mt-2">
+                         <label for="resume" class="cursor-pointer text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
+                             📤 Upload File (Image or .txt)
+                             <input type="file" id="resume" class="hidden" accept=".txt,image/png,image/jpeg">
+                         </label>
+                          <span class="text-muted-color">or</span>
+                         <button onclick="startQuiz()" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
+                             🤖 Build with AI Quiz
+                         </button>
+                     </div>
+                 </div>
+             </div>
             <div class="mt-8 flex justify-between items-center">
                 <button onclick="showStep('welcome-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back</button>
                 <button id="profile-next-btn" onclick="saveProfileAndProceed()" class="btn-primary px-6 py-2 rounded-lg font-semibold">Next: Define Your Goal →</button>
@@ -299,7 +356,7 @@
             </div>
 
              <div id="quiz-questions" class="mt-6 space-y-6">
-                <!-- Questions will be injected here -->
+                 <!-- Questions will be injected here -->
              </div>
 
             <div class="mt-8 flex justify-between items-center">
@@ -340,40 +397,40 @@
         <div id="summary-step" class="step-container hidden card p-8">
             <div id="summary-content-to-pdf">
                  <h2 class="text-2xl font-bold flex items-center"><i class="ph ph-scroll mr-3 text-2xl text-indigo-500"></i>Your Personalized Career Plan</h2>
-                <div class="mt-6 p-4 border rounded-lg bg-white/5 border-border-color fade-in">
-                    <h3 class="font-semibold text-lg">👤 Profile Summary</h3>
-                    <div id="summary-profile" class="mt-2 text-sm text-muted-color space-y-1"></div>
-                </div>
-                <div id="profile-strength-analysis" class="mt-4"></div>
-                <div id="ai-resume-summary" class="mt-4"></div>
-                <div id="skill-gap-analysis" class="mt-4"></div>
-                <div id="summary-plan" class="mt-4 fade-in" style="--delay: 0.2s;"></div>
-                <div id="ai-features" class="mt-4 fade-in" style="--delay: 0.3s;"></div>
-                <div id="project-ideas" class="mt-4"></div>
-                <div id="day-in-life" class="mt-4"></div>
-                <div id="interview-prep" class="mt-4"></div>
-                <div id="resource-hub" class="mt-4 fade-in" style="--delay: 0.4s;"></div>
+                 <div class="mt-6 p-4 border rounded-lg bg-white/5 border-border-color fade-in">
+                     <h3 class="font-semibold text-lg">👤 Profile Summary</h3>
+                     <div id="summary-profile" class="mt-2 text-sm text-muted-color space-y-1"></div>
+                 </div>
+                 <div id="profile-strength-analysis" class="mt-4"></div>
+                 <div id="ai-resume-summary" class="mt-4"></div>
+                 <div id="skill-gap-analysis" class="mt-4"></div>
+                 <div id="summary-plan" class="mt-4 fade-in" style="--delay: 0.2s;"></div>
+                 <div id="ai-features" class="mt-4 fade-in" style="--delay: 0.3s;"></div>
+                 <div id="project-ideas" class="mt-4"></div>
+                 <div id="day-in-life" class="mt-4"></div>
+                 <div id="interview-prep" class="mt-4"></div>
+                 <div id="resource-hub" class="mt-4 fade-in" style="--delay: 0.4s;"></div>
             </div>
             <div class="mt-8 flex justify-between items-center">
                  <button onclick="showStep(userData.direction === 'job-roles' || userData.direction === 'higher-studies' || userData.direction === 'competitive-exams' ? 'path-step' : 'direction-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Go Back</button>
                  <button id="download-pdf-btn" onclick="generatePDF()" class="btn-primary px-6 py-2 rounded-lg font-semibold">Download Report (PDF)</button>
             </div>
              <div class="mt-8 border-t border-border-color pt-6">
-                <button onclick="showStep('feedback-step')" class="w-full btn-primary px-6 py-2 rounded-lg font-semibold">Finish & Give Feedback</button>
-            </div>
+                 <button onclick="showStep('feedback-step')" class="w-full btn-primary px-6 py-2 rounded-lg font-semibold">Finish & Give Feedback</button>
+             </div>
         </div>
 
         <!-- Feedback & Goodbye Steps -->
         <div id="feedback-step" class="step-container hidden card p-8 text-center">
             <h2 class="text-2xl font-bold">👍 Was this helpful?</h2>
              <div class="mt-6 flex justify-center space-x-4">
-                <button onclick="handleFeedback(true)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👍</button>
-                <button onclick="handleFeedback(false)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👎</button>
+                 <button onclick="handleFeedback(true)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👍</button>
+                 <button onclick="handleFeedback(false)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👎</button>
              </div>
              <div id="feedback-response" class="mt-4 font-medium"></div>
              <div class="mt-6">
-                <button onclick="showStep('summary-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back to Summary</button>
-            </div>
+                 <button onclick="showStep('summary-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back to Summary</button>
+             </div>
         </div>
         <div id="goodbye-step" class="step-container hidden card p-8 text-center relative">
              <canvas id="confetti-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
@@ -416,7 +473,7 @@
             if (!apiKey) {
                 document.getElementById('api-error-banner').classList.remove('hidden');
             }
-            document.getElementById('resume').addEventListener('change', simulateResumeParse);
+            document.getElementById('resume').addEventListener('change', handleResumeUpload);
             checkDarkModePreference();
             showStep(currentStepId, true); // Initial load
 
@@ -512,33 +569,122 @@
             renderTags(type);
         }
 
-        async function simulateResumeParse(event) {
+        async function handleResumeUpload(event) {
             const feedbackDiv = document.getElementById('resume-feedback');
-            if (!event.target.files.length) return;
-            
-            feedbackDiv.textContent = '🤖 AI is analyzing your resume...';
+            const file = event.target.files[0];
+            if (!file) return;
+
+            feedbackDiv.textContent = '🤖 AI is analyzing your resume... This may take a moment.';
             const nextBtn = document.getElementById('profile-next-btn');
             nextBtn.disabled = true;
-            
-            const prompt = `Act as an expert resume parser. A user has a degree in "${document.getElementById('ug-stream').value}". Based *strictly* on this academic background, suggest 5 relevant technical and soft skills one would expect to find on their resume. Do not include skills from other fields. Return only a simple comma-separated list. For example, if the degree is in History, suggest skills like "Archival Research, Critical Analysis, Primary Source Interpretation".`;
-            
-            const newSkillsText = await callGeminiAPI(prompt);
 
-            if (typeof newSkillsText === 'string' && !newSkillsText.includes('<p')) {
-                const newSkills = newSkillsText.split(',').map(s => s.trim()).filter(Boolean);
-                newSkills.forEach(s => {
-                    const formattedSkill = s.charAt(0).toUpperCase() + s.slice(1);
-                    if (!userData.skills.includes(formattedSkill)) {
-                        userData.skills.push(formattedSkill);
+            // Handle image files
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Data = e.target.result.split(',')[1];
+                    await processResumeWithVision(base64Data, file.type);
+                };
+                reader.onerror = () => {
+                    feedbackDiv.textContent = '⚠️ Failed to read the image file.';
+                    nextBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            } 
+            // Handle text files
+            else if (file.type === 'text/plain') {
+                 const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const resumeText = e.target.result;
+                    if (!resumeText) {
+                        feedbackDiv.textContent = '⚠️ Could not read file. Is it a plain text file?';
+                        nextBtn.disabled = false;
+                        return;
                     }
-                });
-                renderTags('skills');
-                feedbackDiv.textContent = '✅ AI analysis complete. New skills added!';
+                    await processResumeWithText(resumeText);
+                };
+                 reader.onerror = () => {
+                    feedbackDiv.textContent = '⚠️ Failed to read the text file.';
+                    nextBtn.disabled = false;
+                };
+                reader.readAsText(file);
             } else {
-                feedbackDiv.textContent = '⚠️ Could not analyze resume. Please add skills manually.';
+                 feedbackDiv.textContent = '⚠️ Unsupported file type. Please upload an image or a .txt file.';
+                 nextBtn.disabled = false;
             }
-            nextBtn.disabled = false;
         }
+
+        async function processResumeWithText(resumeText) {
+            const skillsPrompt = `From the following resume text, extract all technical and soft skills. Return only a single, simple, comma-separated list. Do not add any introductory text. For example: "JavaScript, Python, React, Teamwork, Communication, Problem Solving". Resume Text: "${resumeText}"`;
+            const interestsPrompt = `From the following resume text, extract all hobbies and interests. If none are found, return an empty string. Return only a single, simple, comma-separated list. For example: "Reading, Hiking, Open Source Contributions, Chess". Resume Text: "${resumeText}"`;
+            const projectsPrompt = `From the following resume text, extract and combine all project descriptions into a single, concise paragraph. If no projects are found, return an empty string. Resume Text: "${resumeText}"`;
+            await extractResumeData(skillsPrompt, interestsPrompt, projectsPrompt);
+        }
+        
+        async function processResumeWithVision(base64Data, mimeType) {
+            const skillsPrompt = `From this resume image, extract all technical and soft skills. Return only a single, simple, comma-separated list. Do not add any introductory text.`;
+            const interestsPrompt = `From this resume image, extract all hobbies and interests. If none are found, return an empty string. Return only a single, simple, comma-separated list.`;
+            const projectsPrompt = `From this resume image, extract and combine all project descriptions into a single, concise paragraph. If no projects are found, return an empty string.`;
+            await extractResumeData(skillsPrompt, interestsPrompt, projectsPrompt, base64Data, mimeType);
+        }
+        
+        async function extractResumeData(skillsPrompt, interestsPrompt, projectsPrompt, base64Data = null, mimeType = null) {
+            const feedbackDiv = document.getElementById('resume-feedback');
+            const nextBtn = document.getElementById('profile-next-btn');
+             try {
+                const [skillsResponse, interestsResponse, projectsResponse] = await Promise.all([
+                    callGeminiAPI(skillsPrompt, base64Data, mimeType),
+                    callGeminiAPI(interestsPrompt, base64Data, mimeType),
+                    callGeminiAPI(projectsPrompt, base64Data, mimeType)
+                ]);
+
+                let skillsAdded = 0;
+                let interestsAdded = 0;
+                let projectAdded = false;
+
+                if (typeof skillsResponse === 'string' && !skillsResponse.includes('<p')) {
+                    const newSkills = skillsResponse.split(',').map(s => s.trim()).filter(Boolean);
+                    newSkills.forEach(s => {
+                        const formattedSkill = s.charAt(0).toUpperCase() + s.slice(1);
+                        if (!userData.skills.includes(formattedSkill)) {
+                            userData.skills.push(formattedSkill);
+                            skillsAdded++;
+                        }
+                    });
+                    renderTags('skills');
+                }
+
+                if (typeof interestsResponse === 'string' && !interestsResponse.includes('<p')) {
+                    const newInterests = interestsResponse.split(',').map(s => s.trim()).filter(Boolean);
+                    newInterests.forEach(s => {
+                        const formattedInterest = s.charAt(0).toUpperCase() + s.slice(1);
+                        if (!userData.interests.includes(formattedInterest)) {
+                            userData.interests.push(formattedInterest);
+                            interestsAdded++;
+                        }
+                    });
+                    renderTags('interests');
+                }
+                
+                if (typeof projectsResponse === 'string' && !projectsResponse.includes('<p') && projectsResponse.trim() !== '') {
+                    document.getElementById('projects').value = projectsResponse.trim();
+                    projectAdded = true;
+                }
+
+                let feedbackMessage = `✅ Analysis complete! Added ${skillsAdded} skills and ${interestsAdded} interests.`;
+                if (projectAdded) {
+                    feedbackMessage += ' Project description auto-filled.';
+                }
+                feedbackDiv.textContent = feedbackMessage;
+
+            } catch (error) {
+                console.error("Error during resume parsing:", error);
+                feedbackDiv.textContent = '⚠️ An error occurred during AI analysis.';
+            } finally {
+                nextBtn.disabled = false;
+            }
+        }
+
 
         function saveProfileAndProceed() {
             userData.name = document.getElementById('name').value;
@@ -695,10 +841,21 @@
         }
         
         // --- Gemini API & AI Content Generation ---
-        async function callGeminiAPI(prompt) {
+        async function callGeminiAPI(prompt, base64ImageData = null, mimeType = null) {
             const maxRetries = 3;
             let delay = 1000;
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            
+            const parts = [{ text: prompt }];
+            if (base64ImageData && mimeType) {
+                parts.push({
+                    inlineData: {
+                        mimeType: mimeType,
+                        data: base64ImageData
+                    }
+                });
+            }
+            
+            const payload = { contents: [{ parts: parts }] };
 
             for (let i = 0; i < maxRetries; i++) {
                 try {
@@ -708,10 +865,10 @@
                         const candidate = result.candidates?.[0];
                         return candidate?.content?.parts?.[0]?.text || 'No options found.';
                     }
-                    if (response.status >= 500) {
+                    if (response.status === 429 || response.status >= 500) {
                         if (i === maxRetries - 1) throw new Error(`API request failed with status ${response.status} after ${maxRetries} attempts.`);
                         await new Promise(res => setTimeout(res, delay));
-                        delay *= 2;
+                        delay *= 2; 
                     } else {
                         throw new Error(`API request failed with non-retryable status ${response.status}`);
                     }
@@ -721,6 +878,25 @@
                     await new Promise(res => setTimeout(res, delay));
                     delay *= 2;
                 }
+            }
+        }
+
+        async function displayAIResponse(containerElement, apiPromise, loadingMessage) {
+            if (!containerElement) return;
+            containerElement.innerHTML = `<div class="flex items-center mt-4 p-4 rounded-lg bg-white/5">
+                <div class="loader"></div>
+                <p class="ml-3 text-muted-color thinking-dots">${loadingMessage} <span>.</span><span>.</span><span>.</span></p>
+            </div>`;
+            
+            try {
+                const htmlContent = await apiPromise;
+                containerElement.innerHTML = htmlContent;
+                Array.from(containerElement.children).forEach((child, index) => {
+                    child.classList.add('fade-in');
+                    child.style.setProperty('--delay', `${index * 0.1}s`);
+                });
+            } catch (error) {
+                containerElement.innerHTML = `<p class="text-red-500">An error occurred while generating content.</p>`;
             }
         }
         
@@ -814,29 +990,26 @@
         }
 
         async function generateProjectIdeas(button) {
-             const div = document.getElementById('project-ideas');
-             button.disabled = true;
-             div.innerHTML = '<div class="flex items-center mt-4"><div class="loader"></div><p class="ml-3 text-muted-color">✨ Brainstorming project ideas...</p></div>';
-             const prompt = `Act as a mentor. Suggest 3 creative portfolio project ideas for an aspiring "${userData.pathSelection}" with a background in ${userData.ugStream}. For each project, provide a title (<h4>) and a brief 1-2 sentence description (<p>). Format as clean HTML.`;
-             div.innerHTML = await callGeminiAPI(prompt);
-             button.disabled = false;
+            const div = document.getElementById('project-ideas');
+            button.disabled = true;
+            const prompt = `Act as a mentor. Suggest 3 creative portfolio project ideas for an aspiring "${userData.pathSelection}" with a background in ${userData.ugStream}. For each project, provide a title (<h4>) and a brief 1-2 sentence description (<p>). Format as clean HTML.`;
+            await displayAIResponse(div, callGeminiAPI(prompt), 'Brainstorming project ideas');
+            button.disabled = false;
         }
 
         async function generateDayInLife(button) {
              const div = document.getElementById('day-in-life');
              button.disabled = true;
-             div.innerHTML = '<div class="flex items-center mt-4"><div class="loader"></div><p class="ml-3 text-muted-color">✨ Describing a typical day...</p></div>';
              const prompt = `Describe a typical "day in the life" of a ${userData.pathSelection}. Make it engaging, concise, and realistic, covering key tasks and interactions. Format as clean HTML with a title (<h3>) and a paragraph (<p>).`;
-             div.innerHTML = await callGeminiAPI(prompt);
+             await displayAIResponse(div, callGeminiAPI(prompt), 'Describing a typical day');
              button.disabled = false;
         }
         
         async function generateInterviewPrep(button) {
             const div = document.getElementById('interview-prep');
             button.disabled = true;
-            div.innerHTML = '<div class="flex items-center mt-4"><div class="loader"></div><p class="ml-3 text-muted-color">✨ Generating interview questions...</p></div>';
             const prompt = `Act as a hiring manager. For a candidate applying for a "${userData.pathSelection}" role, generate 5 common interview questions. Provide a very brief, one-sentence tip for answering each one. Keep it concise. Format as clean HTML with a main title (<h3>), and an ordered list (ol) where each list item contains the question (<strong>) and the tip (<p>).`;
-            div.innerHTML = await callGeminiAPI(prompt);
+            await displayAIResponse(div, callGeminiAPI(prompt), 'Generating interview questions');
             button.disabled = false;
         }
 
@@ -867,7 +1040,7 @@
             if (projects.trim() !== '') score += 1.5;
             if (resumeUploaded || aiSummary.trim() !== '') score += 2;
 
-            return Math.min(score, 5);
+            return Math.min(score, 4.4);
         }
 
         function generateStarRating(score) {
@@ -875,6 +1048,21 @@
             const halfStar = score % 1 >= 0.5 ? 1 : 0;
             const emptyStars = 5 - fullStars - halfStar;
             return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+        }
+
+        function animateValue(element, start, end, duration) {
+            if (!element) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentValue = progress * (end - start) + start;
+                element.textContent = currentValue.toFixed(1);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
         }
 
         function populateSummary(planHtml) {
@@ -893,11 +1081,13 @@
             document.getElementById('profile-strength-analysis').innerHTML = `
                 <div class="p-4 border rounded-lg bg-white/5 border-border-color">
                     <h3 class="font-semibold text-lg">💪 Profile Strength</h3>
-                    <p class="text-3xl font-bold mt-2 ${scoreColor}">${score.toFixed(1)} / 5.0</p>
+                    <p id="score-display" class="text-3xl font-bold mt-2 ${scoreColor}">0.0</p>
                     <p class="text-2xl ${scoreColor}">${starRating}</p>
                     <p class="text-xs text-muted-color mt-1">This score is an AI-powered estimate based on the completeness of your profile.</p>
                 </div>
             `;
+            const scoreDisplayElement = document.getElementById('score-display');
+            animateValue(scoreDisplayElement, 0, score, 1000);
             
             const summaryContainer = document.getElementById('ai-resume-summary');
             if(userData.aiSummary && summaryContainer) {
@@ -912,8 +1102,8 @@
             if (planHtml) {
                 document.getElementById('summary-plan').innerHTML = planHtml;
                  ['ai-features', 'project-ideas', 'day-in-life', 'interview-prep', 'resource-hub'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerHTML = '';
+                     const el = document.getElementById(id);
+                     if (el) el.innerHTML = '';
                  });
             }
         }
@@ -936,13 +1126,64 @@
             const { jsPDF } = window.jspdf;
             const content = document.getElementById('summary-content-to-pdf');
             if (!content) return;
-            const canvas = await html2canvas(content, { scale: 2, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color') });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`AI_Mentor_Report_${userData.name || 'User'}.pdf`);
+
+            const pdfBtn = document.getElementById('download-pdf-btn');
+            const originalBtnText = pdfBtn.innerHTML;
+            pdfBtn.disabled = true;
+            pdfBtn.innerHTML = 'Generating PDF... <span class="loader loader-light"></span>';
+            
+            const aiFeaturesDiv = document.getElementById('ai-features');
+
+            try {
+                if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'none';
+
+                const canvas = await html2canvas(content, {
+                    scale: 2,
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color'),
+                    useCORS: true,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                const totalPDFHeight = (imgHeight * pdfWidth) / imgWidth;
+
+                let position = 0;
+                let heightLeft = totalPDFHeight;
+
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPDFHeight);
+                heightLeft -= pdfHeight;
+
+                while (heightLeft > 0) {
+                    position -= pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPDFHeight);
+                    heightLeft -= pdfHeight;
+                }
+                
+                pdf.save(`AI_Mentor_Report_${userData.name || 'User'}.pdf`);
+                showToast("✅ PDF downloaded successfully!");
+
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showToast("⚠️ Could not generate PDF. See console for details.");
+            } finally {
+                pdfBtn.disabled = false;
+                pdfBtn.innerHTML = originalBtnText;
+                if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'block';
+            }
         }
 
         function handleFeedback(isHelpful) {
@@ -993,8 +1234,3 @@
 
 </body>
 </html>
-<!---->
-<!---->
-<!---->
-<!---->
-<!---->
