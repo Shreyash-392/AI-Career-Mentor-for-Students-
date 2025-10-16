@@ -135,7 +135,7 @@
 
         /* Robot Animations */
          #waving-robot-group {
-            animation: float-robot 4s ease-in-out infinite;
+             animation: float-robot 4s ease-in-out infinite;
         }
         @keyframes float-robot {
             0%, 100% { transform: translateY(0); }
@@ -160,10 +160,12 @@
         /* Toast Notification */
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #22c55e; color: white; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: bottom 0.5s; z-index: 100; }
         #toast.show { bottom: 20px; }
+        #toast.error { background-color: #ef4444; }
+
 
         /* Progress Bar */
-        #progress-bar-container { width: 100%; background-color: var(--progress-bar-bg); border-radius: 9999px; height: 8px; transition: background-color 0.3s; }
-        #progress-bar { width: 0%; height: 100%; background-color: var(--progress-bar-fill); border-radius: 9999px; transition: width 0.5s ease-out, background-color 0.3s; }
+        #progress-bar-container { width: 100%; background-color: var(--progress-bar-bg); border-radius: 9999px; height: 8px; transition:0.3s; }
+        #progress-bar { width: 0%; height: 100%; background-color: var(--progress-bar-fill); border-radius: 9999px; transition: width 0.5s ease-out; }
         
         .quiz-option { transition: background-color 0.2s, border-color 0.2s, transform 0.2s; }
         .quiz-option.selected { background-color: #e0e7ff; border-color: #4f46e5; transform: scale(1.03); }
@@ -184,9 +186,50 @@
         .scroll-fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         .scroll-fade-in.is-visible { opacity: 1; transform: translateY(0); }
         
-        /* Login Modal */
-        #login-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(5px); }
-        #login-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; }
+        .tag-item {
+            transition: transform 0.2s, background-color 0.2s ease-in-out;
+        }
+        .tag-item:hover {
+            transform: scale(1.08);
+            cursor: default;
+        }
+
+        /* Flip Card Animation */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 220px;
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-color);
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
     </style>
 </head>
 <body class="dynamic-bg">
@@ -215,9 +258,8 @@
         <!-- Header for Welcome Page -->
         <header id="welcome-header" class="flex justify-between items-center p-4 text-color mb-4">
             <h1 class="text-xl font-bold">AI Mentor</h1>
-            <nav class="flex space-x-6 items-center">
-                <a href="#" onclick="location.reload()" class="hover:text-indigo-500 transition-colors">Home</a>
-                <a href="#" onclick="toggleLoginModal(true)" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login</a>
+             <nav>
+                <a href="#" onclick="location.reload()" class="hover:text-indigo-500 transition-colors font-medium">Home</a>
             </nav>
         </header>
 
@@ -263,26 +305,62 @@
             <div id="about-section" class="scroll-fade-in card p-8 md:p-12 my-16">
                  <h2 class="text-3xl font-bold text-center mb-8">What is AI Mentor?</h2>
                  <div class="grid md:grid-cols-3 gap-8 text-center">
-                     <div>
-                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-user-focus"></i></div>
-                         <h3 class="text-xl font-semibold mt-4">Build Your Profile</h3>
-                         <p class="text-muted-color mt-2">Quickly build your career profile by answering a few questions, or simply upload your resume and let our AI do the work.</p>
-                     </div>
-                     <div>
-                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-path"></i></div>
-                         <h3 class="text-xl font-semibold mt-4">Get a Custom Roadmap</h3>
-                         <p class="text-muted-color mt-2">Our AI analyzes your skills and goals to generate a personalized step-by-step roadmap for jobs, higher studies, or competitive exams.</p>
-                     </div>
-                     <div>
-                         <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-rocket-launch"></i></div>
-                         <h3 class="text-xl font-semibold mt-4">Achieve Your Goals</h3>
-                         <p class="text-muted-color mt-2">Receive actionable insights, project ideas, interview prep, and a downloadable report to guide you on your journey.</p>
-                     </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-user-focus"></i></div>
+                                <h3 class="text-xl font-semibold mt-4">Build Your Profile</h3>
+                                <p class="text-muted-color mt-2">Quickly build your career profile by answering a few questions, or simply upload your resume.</p>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3 class="text-lg font-semibold">Multiple Ways to Build</h3>
+                                <ul class="text-sm text-muted-color mt-2 list-disc list-inside">
+                                    <li>Manual Form Entry</li>
+                                    <li>AI-Powered Quiz</li>
+                                    <li>Resume Upload (TXT/Image)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-path"></i></div>
+                                <h3 class="text-xl font-semibold mt-4">Get a Custom Roadmap</h3>
+                                <p class="text-muted-color mt-2">Our AI analyzes your skills and goals to generate a personalized step-by-step roadmap.</p>
+                            </div>
+                            <div class="flip-card-back">
+                                 <h3 class="text-lg font-semibold">Your Future, Your Path</h3>
+                                <ul class="text-sm text-muted-color mt-2 list-disc list-inside">
+                                    <li>Job Role Preparation</li>
+                                    <li>Higher Studies Guidance</li>
+                                    <li>Competitive Exam Strategy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="text-4xl text-indigo-500 mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-full"><i class="ph ph-rocket-launch"></i></div>
+                                <h3 class="text-xl font-semibold mt-4">Achieve Your Goals</h3>
+                                <p class="text-muted-color mt-2">Receive actionable insights, project ideas, and a downloadable report to guide you.</p>
+                            </div>
+                             <div class="flip-card-back">
+                                 <h3 class="text-lg font-semibold">Tools for Success</h3>
+                                <ul class="text-sm text-muted-color mt-2 list-disc list-inside">
+                                    <li>Skill Gap Analysis</li>
+                                    <li>AI Project Ideas</li>
+                                    <li>Interview Preparation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                  </div>
             </div>
              <footer id="footer-section" class="scroll-fade-in text-center text-muted-color text-sm py-8">
-                <p>Developed by Team CODING & HARMONY — Shreyash R Nayak (<a href="mailto:shreyashn392@gmail.com" class="hover:text-indigo-400">shreyashn392@gmail.com</a>) and Aasna Rani (<a href="mailto:aasnarani2007@gmail.com" class="hover:text-indigo-400">aasnarani2007@gmail.com</a>).</p>
-            </footer>
+                 <p>Developed by Team CODING & HARMONY — Shreyash R Nayak (<a href="mailto:shreyashn392@gmail.com" class="hover:text-indigo-400">shreyashn392@gmail.com</a>) and Aasna Rani (<a href="mailto:aasnarani2007@gmail.com" class="hover:text-indigo-400">aasnarani2007@gmail.com</a>).</p>
+             </footer>
         </div>
 
         <!-- Profile Info Step -->
@@ -312,21 +390,21 @@
                  </div>
 
                  <div class="fade-in" style="--delay: 0.4s;">
-                      <label class="block text-sm font-medium text-muted-color mb-1">Undergraduate Background</label>
-                      <div class="flex space-x-2">
-                          <select id="ug-stream" class="block w-full rounded-md p-3 bg-transparent border-gray-300">
-                              <option>B.Tech CSE</option>
-                              <option>B.Tech ECE</option>
-                              <option>B.Tech Mechanical</option>
-                              <option>B.Com</option>
-                              <option>BBA</option>
-                              <option>B.A. History</option>
-                              <option>B.A. Political Science</option>
-                              <option>B.Sc. Physics</option>
-                              <option>B.Sc. Chemistry</option>
-                          </select>
-                          <input type="text" id="ug-marks" class="block w-1/3 rounded-md p-3 bg-transparent border-gray-300" placeholder="CGPA/%">
-                      </div>
+                     <label class="block text-sm font-medium text-muted-color mb-1">Undergraduate Background</label>
+                     <div class="flex space-x-2">
+                         <select id="ug-stream" class="block w-full rounded-md p-3 bg-transparent border-gray-300">
+                             <option>B.Tech CSE</option>
+                             <option>B.Tech ECE</option>
+                             <option>B.Tech Mechanical</option>
+                             <option>B.Com</option>
+                             <option>BBA</option>
+                             <option>B.A. History</option>
+                             <option>B.A. Political Science</option>
+                             <option>B.Sc. Physics</option>
+                             <option>B.Sc. Chemistry</option>
+                         </select>
+                         <input type="text" id="ug-marks" class="block w-1/3 rounded-md p-3 bg-transparent border-gray-300" placeholder="CGPA/%">
+                     </div>
                  </div>
                  <div class="fade-in" style="--delay: 0.5s;">
                      <label class="block text-sm font-medium">Upload your resume to autofill.</label>
@@ -336,7 +414,7 @@
                              📤 Upload File (Image or .txt)
                              <input type="file" id="resume" class="hidden" accept=".txt,image/png,image/jpeg">
                          </label>
-                          <span class="text-muted-color">or</span>
+                         <span class="text-muted-color">or</span>
                          <button onclick="startQuiz()" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
                              🤖 Build with AI Quiz
                          </button>
@@ -362,13 +440,13 @@
                     </svg>
                 </div>
                 <div>
-                     <h2 class="text-2xl font-bold">🤖 AI Resume Builder Quiz</h2>
-                     <p class="mt-2 text-muted-color">Answer a few questions, and I'll generate a professional summary for you!</p>
+                    <h2 class="text-2xl font-bold">🤖 AI Resume Builder Quiz</h2>
+                    <p class="mt-2 text-muted-color">Answer a few questions, and I'll generate a professional summary for you!</p>
                 </div>
             </div>
 
              <div id="quiz-questions" class="mt-6 space-y-6">
-                 <!-- Questions will be injected here -->
+                <!-- Questions will be injected here -->
              </div>
 
             <div class="mt-8 flex justify-between items-center">
@@ -423,6 +501,10 @@
                  <div id="interview-prep" class="mt-4"></div>
                  <div id="resource-hub" class="mt-4 fade-in" style="--delay: 0.4s;"></div>
             </div>
+            
+            <!-- Market News Section (NOT included in PDF) -->
+            <div id="market-news" class="mt-4"></div>
+
             <div class="mt-8 flex justify-between items-center">
                  <button onclick="showStep(userData.direction === 'job-roles' || userData.direction === 'higher-studies' || userData.direction === 'competitive-exams' ? 'path-step' : 'direction-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Go Back</button>
                  <button id="download-pdf-btn" onclick="generatePDF()" class="btn-primary px-6 py-2 rounded-lg font-semibold">Download Report (PDF)</button>
@@ -435,14 +517,14 @@
         <!-- Feedback & Goodbye Steps -->
         <div id="feedback-step" class="step-container hidden card p-8 text-center">
             <h2 class="text-2xl font-bold">👍 Was this helpful?</h2>
-             <div class="mt-6 flex justify-center space-x-4">
-                 <button onclick="handleFeedback(true)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👍</button>
-                 <button onclick="handleFeedback(false)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👎</button>
-             </div>
-             <div id="feedback-response" class="mt-4 font-medium"></div>
-             <div class="mt-6">
-                 <button onclick="showStep('summary-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back to Summary</button>
-             </div>
+              <div class="mt-6 flex justify-center space-x-4">
+                  <button onclick="handleFeedback(true)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👍</button>
+                  <button onclick="handleFeedback(false)" class="text-4xl p-4 rounded-full hover:bg-white/10 transition transform hover:scale-125">👎</button>
+              </div>
+              <div id="feedback-response" class="mt-4 font-medium"></div>
+              <div class="mt-6">
+                  <button onclick="showStep('summary-step')" class="text-sm font-semibold text-muted-color hover:text-color transition-colors">← Back to Summary</button>
+              </div>
         </div>
         <div id="goodbye-step" class="step-container hidden card p-8 text-center relative">
              <canvas id="confetti-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
@@ -450,28 +532,8 @@
             <h2 class="text-2xl font-bold mt-4">👋 Thank You!</h2>
             <p class="mt-2 text-muted-color">Best of luck on your career journey, <span id="final-user-name"></span>!</p>
             <div class="mt-8 flex justify-center space-x-4">
-                <button onclick="restart()" class="btn-secondary px-6 py-2 rounded-lg font-semibold">🔁 Start New Session</button>
+                <button onclick="restart()" class="btn-primary px-6 py-2 rounded-lg font-semibold">🔁 Start New Session</button>
             </div>
-        </div>
-    </div>
-    
-    <!-- Login Modal -->
-    <div id="login-modal-overlay" class="hidden fade-in" onclick="toggleLoginModal(false)"></div>
-    <div id="login-modal" class="hidden w-full max-w-sm">
-        <div class="card p-8">
-            <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
-            <div class="space-y-6">
-                <div class="relative">
-                    <input type="email" id="email" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
-                    <label for="email" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Email Address</label>
-                </div>
-                <div class="relative">
-                    <input type="password" id="password" class="mt-1 block w-full rounded-md p-3 peer bg-transparent border-gray-300" placeholder=" ">
-                    <label for="password" class="absolute left-3 -top-2.5 text-sm text-indigo-500 bg-card-bg-color px-1 transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-color peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-500">Password</label>
-                </div>
-                <button onclick="handleLogin()" class="w-full btn-primary px-6 py-3 rounded-lg font-semibold">Login</button>
-            </div>
-            <button onclick="toggleLoginModal(false)" class="absolute top-4 right-4 text-muted-color hover:text-color">&times;</button>
         </div>
     </div>
     
@@ -481,12 +543,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script>
+    <script type="module">
+        // --- FIREBASE IMPORTS ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // --- GEMINI API SETUP ---
         const apiKey = "AIzaSyCF7x2V7fqHNrTwdfgips-VhJjqH_qAuck"; 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        const modelName = 'gemini-2.5-flash-preview-09-2025';
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-        const userData = { name: '', skills: [], interests: [], projects: '', ugStream: '', ugMarks: '', direction: '', pathSelection: '', aiSummary: '', resumeScore: 0 };
+        // --- FIREBASE SETUP ---
+        let db, auth, userId, userDataUnsubscribe;
+        let isFirebaseInitialized = false;
+        let userDataRef;
+
+        const userData = { name: '', skills: [], interests: [], projects: '', ugStream: 'B.Tech CSE', ugMarks: '', direction: '', pathSelection: '', aiSummary: '', resumeScore: 0 };
         
         const careerData = {
             'resources': {
@@ -509,12 +582,130 @@
             checkDarkModePreference();
             setupScrollAnimations();
             showStep(currentStepId, true); // Initial load
+            initFirebase();
 
-            document.querySelectorAll('.btn-primary').forEach(button => {
+            document.querySelectorAll('.btn-primary, .choice-card').forEach(button => {
                 button.addEventListener('click', createRipple);
             });
         };
 
+        async function initFirebase() {
+            try {
+                // Use global variables provided by the Canvas environment
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'ai-mentor-app';
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+                
+                if (firebaseConfigStr === '{}') {
+                    console.warn("Firebase config is missing. App will run in local mode without persistence.");
+                    isFirebaseInitialized = false;
+                    return; // Exit if no config
+                }
+
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                isFirebaseInitialized = true;
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        handleUserAuthenticated(user);
+                    } else {
+                        signInUser();
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                showToast("Database connection failed. Progress will not be saved.", true);
+                isFirebaseInitialized = false;
+            }
+        }
+
+        async function signInUser() {
+             if (!isFirebaseInitialized) return;
+             try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Sign-In Error:", error);
+                showToast("Authentication failed. Cannot save progress.", true);
+            }
+        }
+
+        async function handleUserAuthenticated(user) {
+            if (!isFirebaseInitialized) return;
+            console.log("User authenticated:", user.uid);
+            userId = user.uid;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'ai-mentor-app';
+            userDataRef = doc(db, `artifacts/${appId}/users/${userId}/profile/data`);
+
+            // One-time fetch for initial session state
+            try {
+                const docSnap = await getDoc(userDataRef);
+                if (docSnap.exists()) {
+                    console.log("Loaded existing profile from Firestore.");
+                    Object.assign(userData, docSnap.data());
+                    // Update form fields with loaded data
+                    populateProfileForm();
+                } else {
+                    console.log("No existing profile. Will create on first save.");
+                }
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            }
+            
+            // Listen for real-time updates
+            if (userDataUnsubscribe) userDataUnsubscribe();
+            userDataUnsubscribe = onSnapshot(userDataRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    console.log("Profile data synced in real-time.");
+                    Object.assign(userData, docSnap.data());
+                }
+            });
+        }
+        
+        async function persistUserData() {
+            if (!isFirebaseInitialized || !userDataRef) {
+                console.warn("Firebase not initialized. Skipping data persistence.");
+                return;
+            }
+            try {
+                // Use setDoc with merge to create or update the document
+                await setDoc(userDataRef, userData, { merge: true });
+                console.log("User data persisted to Firestore.");
+            } catch (error) {
+                console.error("Error persisting user data:", error);
+                showToast("Error saving progress.", true);
+            }
+        }
+
+        // Make functions globally accessible for onclick handlers
+        window.startInteraction = startInteraction;
+        window.goBackToHome = goBackToHome;
+        window.handleTagInput = handleTagInput;
+        window.removeTag = removeTag;
+        window.startQuiz = startQuiz;
+        window.saveProfileAndProceed = saveProfileAndProceed;
+        window.showStep = showStep;
+        window.selectQuizOption = selectQuizOption;
+        window.processQuiz = processQuiz;
+        window.handleDirectionChoice = handleDirectionChoice;
+        window.generateAiRoadmap = generateAiRoadmap;
+        window.generateAiHigherStudiesPlan = generateAiHigherStudiesPlan;
+        window.generatePathResult = generatePathResult;
+        window.generateProjectIdeas = generateProjectIdeas;
+        window.generateDayInLife = generateDayInLife;
+        window.generateInterviewPrep = generateInterviewPrep;
+        window.generateMarketNews = generateMarketNews;
+        window.generatePDF = generatePDF;
+        window.handleFeedback = handleFeedback;
+        window.restart = restart;
+        window.toggleDarkMode = toggleDarkMode;
+        
         function startInteraction() {
             document.getElementById('welcome-header').classList.add('hidden');
             document.getElementById('about-section').classList.add('hidden');
@@ -567,9 +758,10 @@
             document.getElementById('progress-bar').style.width = `${progress}%`;
         }
         
-        function showToast(message) {
+        function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
+            toast.classList.toggle('error', isError);
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
@@ -581,8 +773,8 @@
             const radius = diameter / 2;
 
             circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
             circle.classList.add("ripple");
 
             const ripple = button.getElementsByClassName("ripple")[0];
@@ -591,6 +783,15 @@
         }
 
         // --- Profile Step Logic ---
+        function populateProfileForm() {
+            document.getElementById('name').value = userData.name || '';
+            document.getElementById('projects').value = userData.projects || '';
+            document.getElementById('ug-stream').value = userData.ugStream || 'B.Tech CSE';
+            document.getElementById('ug-marks').value = userData.ugMarks || '';
+            renderTags('skills');
+            renderTags('interests');
+        }
+        
         function handleTagInput(event, type) {
             if (event.key !== 'Enter') return;
             event.preventDefault();
@@ -606,8 +807,8 @@
         function renderTags(type) {
             const container = document.getElementById(`${type}-tags`);
             if(!container) return;
-            container.innerHTML = userData[type].map(tag => `
-                <span class="fade-in inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+            container.innerHTML = (userData[type] || []).map(tag => `
+                <span class="tag-item fade-in inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
                     ${tag}
                     <button class="ml-1.5 flex-shrink-0 text-indigo-500 hover:text-indigo-700" onclick="removeTag('${type}', '${tag}')">&times;</button>
                 </span>`).join('');
@@ -680,7 +881,7 @@
         async function extractResumeData(skillsPrompt, interestsPrompt, projectsPrompt, base64Data = null, mimeType = null) {
             const feedbackDiv = document.getElementById('resume-feedback');
             const nextBtn = document.getElementById('profile-next-btn');
-             try {
+              try {
                 const [skillsResponse, interestsResponse, projectsResponse] = await Promise.all([
                     callGeminiAPI(skillsPrompt, base64Data, mimeType),
                     callGeminiAPI(interestsPrompt, base64Data, mimeType),
@@ -740,6 +941,9 @@
             userData.projects = document.getElementById('projects').value;
             userData.ugStream = document.getElementById('ug-stream').value;
             userData.ugMarks = document.getElementById('ug-marks').value;
+            
+            persistUserData(); // Save to Firebase
+            
             const directionPrompt = document.getElementById('direction-prompt');
             if (directionPrompt) {
                 directionPrompt.innerHTML = `Great profile, <span class="font-semibold text-color">${userData.name || 'friend'}</span>! With your background in ${userData.ugStream}, you've got some amazing options. What's your primary goal right now?`;
@@ -778,7 +982,7 @@
             let html = '';
             quizData.forEach((q, index) => {
                 html += `<div class="fade-in" style="--delay: ${index * 0.15}s">
-                            <label class="block text-sm font-medium mb-2">${index+1}. ${q.question}</label>`;
+                         <label class="block text-sm font-medium mb-2">${index+1}. ${q.question}</label>`;
                 if (q.type === 'radio') {
                     html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
                     q.options.forEach(opt => {
@@ -822,8 +1026,7 @@
             if(answers.field !== 'Not specified' && !userData.interests.includes(answers.field)) userData.interests.push(answers.field);
             if(answers.work !== 'Not specified' && !userData.interests.includes(answers.work)) userData.interests.push(answers.work);
 
-            renderTags('skills');
-            renderTags('interests');
+            populateProfileForm(); // Update the UI in the profile form
             
             const prompt = `Based on these quiz answers, generate a concise professional summary (2-3 sentences) for a resume.
             - Education: ${document.getElementById('ug-stream').value}
@@ -839,12 +1042,13 @@
             submitBtn.innerText = 'Generate My Summary';
             
             showToast('✅ AI summary generated and profile updated!');
-            saveProfileAndProceed();
+            saveProfileAndProceed(); // Save all data and move to the next step
         }
 
         // --- Career Path Logic ---
         async function handleDirectionChoice(direction) {
             userData.direction = direction;
+            await persistUserData();
             const pathContent = document.getElementById('path-content');
             let prompt = '';
             let title = '';
@@ -890,7 +1094,7 @@
         }
         
         // --- Gemini API & AI Content Generation ---
-        async function callGeminiAPI(prompt, base64ImageData = null, mimeType = null) {
+        async function callGeminiAPI(prompt, base64ImageData = null, mimeType = null, useGrounding = false) {
             const maxRetries = 3;
             let delay = 1000;
             
@@ -905,6 +1109,9 @@
             }
             
             const payload = { contents: [{ parts: parts }] };
+            if (useGrounding) {
+                payload.tools = [{ "google_search": {} }];
+            }
 
             for (let i = 0; i < maxRetries; i++) {
                 try {
@@ -961,7 +1168,7 @@
             if(summaryPlanDiv) {
                 summaryPlanDiv.innerHTML = `<div class="flex items-center justify-center p-8"><div class="loader"></div><p class="ml-4 text-muted-color">${message}</p></div>`;
             }
-            ['profile-strength-analysis', 'skill-gap-analysis', 'ai-features', 'project-ideas', 'day-in-life', 'interview-prep', 'resource-hub'].forEach(id => {
+            ['profile-strength-analysis', 'skill-gap-analysis', 'ai-features', 'project-ideas', 'day-in-life', 'interview-prep', 'resource-hub', 'market-news'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.innerHTML = '';
             });
@@ -971,6 +1178,7 @@
 
         async function generateAiRoadmap(role) {
             userData.pathSelection = role;
+            await persistUserData();
             setSummaryLoading('✨ Analyzing skill gap and generating roadmap...');
             
             const requiredSkillsPrompt = `For the job role "${role}", list the top 8 most essential skills. Return only a simple comma-separated list.`;
@@ -1008,6 +1216,7 @@
                 <button id="project-idea-btn" onclick="generateProjectIdeas(this)" class="btn-primary mt-4 px-4 py-2 rounded-lg font-semibold"><i class="ph ph-lightbulb mr-2"></i>Suggest Projects</button>
                 <button id="day-in-life-btn" onclick="generateDayInLife(this)" class="btn-primary mt-4 ml-2 px-4 py-2 rounded-lg font-semibold"><i class="ph ph-sun-dim mr-2"></i>A Day in the Life</button>
                 <button id="interview-prep-btn" onclick="generateInterviewPrep(this)" class="btn-primary mt-4 ml-2 px-4 py-2 rounded-lg font-semibold"><i class="ph ph-microphone-stage mr-2"></i>Interview Prep</button>
+                <button id="market-news-btn" onclick="generateMarketNews(this)" class="btn-primary mt-4 ml-2 px-4 py-2 rounded-lg font-semibold"><i class="ph ph-newspaper mr-2"></i>Recent Market News</button>
             `;
             populateResourceHub(role);
             
@@ -1018,11 +1227,12 @@
                     pdfBtn.innerHTML = 'Download Report (PDF)';
                 }
                 showToast('✅ PDF Report is ready to download!');
-            }, 5000);
+            }, 4000);
         }
         
         async function generateAiHigherStudiesPlan(stream) {
             userData.pathSelection = stream;
+            await persistUserData();
             setSummaryLoading(`✨ Finding top colleges for ${stream}...`);
             const prompt = `Act as an expert admissions counselor specializing in Indian higher education. The user with a ${userData.ugStream} degree is interested in "${stream}" for higher studies in India. Skills: [${userData.skills.join(', ')}]. Provide a brief list of the top 3-4 universities in India for this field. Also, suggest key entrance exams and a brief preparation strategy. Keep all descriptions concise. Format as clean HTML with a main title (<h3>) and sections (<h4>) for 'Top Indian Universities', 'Key Entrance Exams', and 'Prep Strategy'.`;
             const planHtml = await callGeminiAPI(prompt);
@@ -1035,7 +1245,7 @@
                     pdfBtn.innerHTML = 'Download Report (PDF)';
                 }
                 showToast('✅ PDF Report is ready to download!');
-            }, 5000);
+            }, 4000);
         }
 
         async function generateProjectIdeas(button) {
@@ -1061,9 +1271,19 @@
             await displayAIResponse(div, callGeminiAPI(prompt), 'Generating interview questions');
             button.disabled = false;
         }
+        
+        async function generateMarketNews(button) {
+            const div = document.getElementById('market-news');
+            if (!div) return;
+            button.disabled = true;
+            const prompt = `Based on the latest information from today, October 16, 2025, provide a brief overview of the current market news, hiring trends, and key job opportunities in India for a graduate from the ${userData.ugStream} field. Focus on recent developments. Format as clean HTML with a main title (<h3>) and bullet points (<ul> and <li>) for key trends.`;
+            await displayAIResponse(div, callGeminiAPI(prompt, null, null, true), 'Fetching latest market news');
+            button.disabled = false;
+        }
 
         async function generatePathResult(selection) {
             userData.pathSelection = selection;
+            await persistUserData();
             setSummaryLoading(`✨ Generating a plan for ${selection}...`);
             const prompt = `Provide a brief overview for the competitive exam "${selection}". Include a short list of top preparation resources and the primary recruiting bodies. Keep it concise. Format as clean HTML with a main title (<h3>), and sections (<h4>) for 'Top Prep Resources' and 'Recruiting Bodies'.`;
             const resultHtml = await callGeminiAPI(prompt);
@@ -1076,20 +1296,31 @@
                     pdfBtn.innerHTML = 'Download Report (PDF)';
                 }
                 showToast('✅ PDF Report is ready to download!');
-            }, 5000);
+            }, 4000);
         }
         
         function calculateResumeScore() {
             let score = 0;
-            const { skills, interests, projects, aiSummary } = userData;
+            const { skills, interests, projects, ugMarks, name, aiSummary } = userData;
             const resumeUploaded = document.getElementById('resume').files.length > 0;
 
-            if (skills.length > 0) score += 1;
-            if (interests.length > 0) score += 0.5;
-            if (projects.trim() !== '') score += 1.5;
-            if (resumeUploaded || aiSummary.trim() !== '') score += 2;
+            if (name.trim() !== '') score += 0.5;
+            if (skills.length > 2) score += 1.5;
+            else if (skills.length > 0) score += 0.75;
+            if (interests.length > 1) score += 0.5;
+            else if (interests.length > 0) score += 0.25;
+            if (projects.trim() !== '') score += 1.0;
+            if (ugMarks.trim() !== '') score += 0.5;
+            if (resumeUploaded || (aiSummary && aiSummary.trim() !== '')) score += 1.0;
 
-            return Math.min(score, 4.4);
+            // Max possible score is 5.0. Let's map the score from [0, 5.0] to a more dynamic [3.5, 4.4] range.
+            const baseScore = 3.5;
+            const scoreRange = 0.9; // 4.4 - 3.5
+            const maxRawScore = 5.0;
+            
+            const scaledScore = baseScore + (score / maxRawScore) * scoreRange;
+
+            return Math.min(scaledScore, 4.4);
         }
 
         function generateStarRating(score) {
@@ -1173,68 +1404,58 @@
 
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
-            const content = document.getElementById('summary-content-to-pdf');
-            if (!content) return;
+            const contentSource = document.getElementById('summary-content-to-pdf');
+            if (!contentSource) return;
 
             const pdfBtn = document.getElementById('download-pdf-btn');
             const originalBtnText = pdfBtn.innerHTML;
             pdfBtn.disabled = true;
             pdfBtn.innerHTML = 'Generating PDF... <span class="loader loader-light"></span>';
+
+            // Clone the node to avoid manipulating the live DOM
+            const contentClone = contentSource.cloneNode(true);
+
+            // Remove interactive elements from the clone that shouldn't be in the PDF
+            const featuresToRemove = contentClone.querySelector('#ai-features');
+            if (featuresToRemove) featuresToRemove.remove();
+
+            // Style the clone to be rendered off-screen but with its full dimensions
+            contentClone.style.position = 'absolute';
+            contentClone.style.top = '0';
+            contentClone.style.left = '-9999px'; // Position it off-screen
+            contentClone.style.width = `${contentSource.offsetWidth}px`; // Set a fixed width to ensure correct height calculation
+            document.body.appendChild(contentClone);
             
-            const aiFeaturesDiv = document.getElementById('ai-features');
-            const resourceHubDiv = document.getElementById('resource-hub');
+            // A short delay to allow the browser to render the cloned element
+            await new Promise(resolve => setTimeout(resolve, 50));
 
             try {
-                if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'none';
-                if (resourceHubDiv) resourceHubDiv.style.display = 'none';
-
-                const canvas = await html2canvas(content, {
+                const canvas = await html2canvas(contentClone, {
                     scale: 2,
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color'),
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color').trim(),
                     useCORS: true,
-                    windowWidth: content.scrollWidth,
-                    windowHeight: content.scrollHeight
+                    // By not setting width/height, html2canvas will use the element's scroll dimensions
                 });
 
                 const imgData = canvas.toDataURL('image/png');
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                
                 const pdf = new jsPDF({
                     orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4'
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
                 });
-
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
                 
-                const totalPDFHeight = (imgHeight * pdfWidth) / imgWidth;
-
-                let position = 0;
-                let heightLeft = totalPDFHeight;
-
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPDFHeight);
-                heightLeft -= pdfHeight;
-
-                while (heightLeft > 0) {
-                    position -= pdfHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPDFHeight);
-                    heightLeft -= pdfHeight;
-                }
-                
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
                 pdf.save(`AI_Mentor_Report_${userData.name || 'User'}.pdf`);
                 showToast("✅ PDF downloaded successfully!");
 
             } catch (error) {
                 console.error("Error generating PDF:", error);
-                showToast("⚠️ Could not generate PDF. See console for details.");
+                showToast("⚠️ Could not generate PDF. See console for details.", true);
             } finally {
+                // Clean up by removing the clone from the DOM
+                document.body.removeChild(contentClone);
                 pdfBtn.disabled = false;
                 pdfBtn.innerHTML = originalBtnText;
-                if (aiFeaturesDiv) aiFeaturesDiv.style.display = 'block';
-                if (resourceHubDiv) resourceHubDiv.style.display = 'block';
             }
         }
 
@@ -1259,33 +1480,10 @@
                 resize: true,
                 useWorker: true
             });
-            myConfetti({ particleCount: 150, spread: 160 });
+            myConfetti({ particleCount: 150, spread: 160, origin: { y: 0.6 } });
         }
 
         // --- Helpers & UI Functions ---
-        function toggleLoginModal(show) {
-            const overlay = document.getElementById('login-modal-overlay');
-            const modal = document.getElementById('login-modal');
-            if (show) {
-                overlay.classList.remove('hidden');
-                modal.classList.remove('hidden');
-                modal.classList.add('slide-in');
-            } else {
-                modal.classList.remove('slide-in');
-                modal.classList.add('slide-out');
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    modal.classList.add('hidden');
-                    modal.classList.remove('slide-out');
-                }, 500);
-            }
-        }
-        
-        function handleLogin() {
-            // This is a demo login. In a real app, you'd have authentication logic.
-            toggleLoginModal(false);
-            showToast('Login successful! (Demo)');
-        }
         
         function setupScrollAnimations() {
             const observer = new IntersectionObserver((entries) => {
@@ -1312,18 +1510,10 @@
                 if (toggle) toggle.checked = true;
             }
         }
-        function copyToClipboard(elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const content = el.innerText;
-            navigator.clipboard.writeText(content).then(() => {
-                showToast('Copied to clipboard!');
-            }, () => {
-                showToast('Failed to copy.');
-            });
-        }
     </script>
 
 </body>
 </html>
+
+
 
